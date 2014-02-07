@@ -2,18 +2,27 @@ import htmlentitydefs
 import re
 from collections import defaultdict
 from django.utils.html import strip_tags
+from django.conf import settings
+
+class KeywordFinder(object):
+    def __init__(self):
+        with open(settings.STOPWORD_FILE) as f:
+            self.stopword_set = frozenset(f.readlines())
+
+    def find_keywords(self, text):
+        sanitised_text = strip_tags(unescape(text)).lower()
+        word_count = defaultdict(int)
+        delim = re.compile(r'[^\w]')
+
+        for word in delim.split(sanitised_text):
+            if word:
+                word_count[word] += 1
+
+        sorted_list = sorted(word_count, key=word_count.get, reverse=True)
+        return sorted_list[:10]
 
 def find_keywords(text):
-    sanitised_text = strip_tags(unescape(text)).lower()
-    word_count = defaultdict(int)
-    delim = re.compile(r'[^\w]')
-
-    for word in delim.split(sanitised_text):
-        if word:
-            word_count[word] += 1
-
-    sorted_list = sorted(word_count, key=word_count.get, reverse=True)
-    return sorted_list[:10]
+    return KeywordFinder().find_keywords(text)
 
 def unescape(text):
     '''

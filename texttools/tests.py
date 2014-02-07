@@ -28,3 +28,6 @@ class FindKeyword(TestCase):
         self.assertEqual(utils.find_keywords(
               "<p>Fox. fox</p> elephant. <div>orange fox.orange"),
           ['fox', 'orange', 'elephant'])
+
+class FindKeywordStopWords(TestCase):
+    pass
