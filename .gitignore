@@ -2,7 +2,7 @@
 *~
 
 *.swp
-*.pyc
+*.py[co]
 *.sqlite
 *.sqlite3
 *.db

@@ -3,5 +3,12 @@
 {% block "content" %}
   <h1>{{ article.title }}</h1>
 
+  <h2>Keywords</h2>
+  <ul>
+  {% for key in keywords %}
+    <li>{{ key }}
+  {% endfor %}
+  </ul>
+
   {{ article.xhtml_body|safe }}
 {% endblock %}
