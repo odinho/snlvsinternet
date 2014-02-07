@@ -6,13 +6,16 @@ from django.conf import settings
 
 class KeywordFinder(object):
     def __init__(self, stopword_fn=settings.STOPWORD_FILE):
-        with open(stopword_fn) as f:
-            self.stopword_set = frozenset(f.read().splitlines())
+        if stopword_fn:
+            with open(stopword_fn) as f:
+                self.stopword_set = frozenset(f.read().splitlines())
+        else:
+            self.stopword_set = frozenset()
 
     def find_keywords(self, text):
         sanitised_text = strip_tags(unescape(text)).lower()
         word_count = defaultdict(int)
-        delim = re.compile(r'[^\w]')
+        delim = re.compile(r'[^\w]', flags=re.UNICODE)
 
         for word in delim.split(sanitised_text):
             if word in self.stopword_set:
