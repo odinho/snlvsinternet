@@ -5,8 +5,8 @@ from django.utils.html import strip_tags
 from django.conf import settings
 
 class KeywordFinder(object):
-    def __init__(self):
-        with open(settings.STOPWORD_FILE) as f:
+    def __init__(self, stopword_fn=settings.STOPWORD_FILE):
+        with open(stopword_fn) as f:
             self.stopword_set = frozenset(f.readlines())
 
     def find_keywords(self, text):
@@ -15,8 +15,11 @@ class KeywordFinder(object):
         delim = re.compile(r'[^\w]')
 
         for word in delim.split(sanitised_text):
-            if word:
-                word_count[word] += 1
+            if word in self.stopword_set:
+                continue
+            if not word:
+                continue
+            word_count[word] += 1
 
         sorted_list = sorted(word_count, key=word_count.get, reverse=True)
         return sorted_list[:10]

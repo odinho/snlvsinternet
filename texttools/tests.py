@@ -29,5 +29,18 @@ class FindKeyword(TestCase):
               "<p>Fox. fox</p> elephant. <div>orange fox.orange"),
           ['fox', 'orange', 'elephant'])
 
+
 class FindKeywordStopWords(TestCase):
-    pass
+    def test_stopword(self):
+        kf = utils.KeywordFinder()
+        kf.stopword_set = set(['er', 'eg'])
+        self.assertEqual(
+            kf.find_keywords('Eg er kul'),
+            ['kul'])
+
+    def test_stopword_moar(self):
+        kf = utils.KeywordFinder()
+        kf.stopword_set = set(['er', 'eg'])
+        self.assertEqual(
+            kf.find_keywords('Eg er veldig kul og kul og eg og.'),
+            ['og', 'kul', 'veldig'])
