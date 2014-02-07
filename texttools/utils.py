@@ -1,13 +1,14 @@
+import codecs
 import htmlentitydefs
 import re
 from collections import defaultdict
-from django.utils.html import strip_tags
 from django.conf import settings
+from django.utils.html import strip_tags
 
 class KeywordFinder(object):
     def __init__(self, stopword_fn=settings.STOPWORD_FILE):
         if stopword_fn:
-            with open(stopword_fn) as f:
+            with codecs.open(stopword_fn, 'r', 'utf-8') as f:
                 self.stopword_set = frozenset(f.read().splitlines())
         else:
             self.stopword_set = frozenset()
