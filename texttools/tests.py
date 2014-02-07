@@ -68,3 +68,18 @@ class FindKeyword(TestCase):
             [u'landet', u'st\xf8rste', u'norges', u'hovedstad',
              u'dessuten', u'byene', u'eldste', u'by']
         )
+
+class FindKeywordAndFreqs(TestCase):
+    def setUp(self):
+        self.fk = utils.KeywordFinder(stopword_fn=None)
+
+    def test_find_keywordfreqs(self):
+        self.assertEqual(self.fk.find_keywords_and_freqs(
+              "Fox fox elephant orange fox orange"),
+          [('fox', 3), ('orange', 2), ('elephant', 1)])
+
+    def test_find_keywordfreqs_stopwords(self):
+        self.fk.stopword_set = set(['orange'])
+        self.assertEqual(self.fk.find_keywords_and_freqs(
+              "Fox fox elephant orange fox orange"),
+          [('fox', 3), ('elephant', 1)])

@@ -1,3 +1,4 @@
+import operator
 import codecs
 import htmlentitydefs
 import re
@@ -14,6 +15,9 @@ class KeywordFinder(object):
             self.stopword_set = frozenset()
 
     def find_keywords(self, text):
+        return [w[0] for w in self.find_keywords_and_freqs(text)]
+
+    def find_keywords_and_freqs(self, text):
         sanitised_text = strip_tags(unescape(text)).lower()
         word_count = defaultdict(int)
         delim = re.compile(r'[^\w]', flags=re.UNICODE)
@@ -24,12 +28,11 @@ class KeywordFinder(object):
             if not word:
                 continue
             word_count[word] += 1
-
-        sorted_list = sorted(word_count, key=word_count.get, reverse=True)
+        sorted_list = sorted(word_count.iteritems(),
+                             key=operator.itemgetter(1),
+                             reverse=True)
         return sorted_list[:10]
 
-def find_keywords(text):
-    return KeywordFinder().find_keywords(text)
 
 def unescape(text):
     '''
