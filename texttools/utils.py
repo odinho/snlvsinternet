@@ -7,7 +7,7 @@ from django.conf import settings
 class KeywordFinder(object):
     def __init__(self, stopword_fn=settings.STOPWORD_FILE):
         with open(stopword_fn) as f:
-            self.stopword_set = frozenset(f.readlines())
+            self.stopword_set = frozenset(f.read().splitlines())
 
     def find_keywords(self, text):
         sanitised_text = strip_tags(unescape(text)).lower()
