@@ -23,12 +23,30 @@ def vs(request, snl_key):
                   SNL_URL.format(key=snl_key))
     wp = WikipediaArticle.objects.fetch(key=snl_key)
     kf = KeywordFinder()
-    snl_keywords = kf.find_keywords_and_freqs(snl.xhtml_body)
+
+    snl_words, snl_wc = kf.get_word_freqs(snl.xhtml_body)
+
     kf.add_stopwords_from_file(settings.WIKIPEDIA_STOPWORD_FILE)
-    wp_keywords = kf.find_keywords_and_freqs(wp.html_body)
+    wp_words, wp_wc = kf.get_word_freqs(wp.html_body)
+
+    snl_top = sorted(snl_words, key=snl_words.get, reverse=True)[:10]
+    wp_top = sorted(wp_words, key=wp_words.get, reverse=True)[:10]
+
+    all_words = {}
+    for w in set(snl_words) | set(wp_words):
+        if w in snl_top or w in wp_top:
+            continue
+        all_words[w] = snl_words.get(w, 0) + wp_words.get(w, 0)
+    all_top = sorted(all_words, key=all_words.get, reverse=True)[:10]
+
+    keywords = set(snl_top + wp_top + all_top)
+
     return render(request, 'snl/vs.html', {
-        'snl_kw': snl_keywords,
-        'wp_kw': wp_keywords,
+
+        'keywords': keywords,
+        'snl_words': snl_words,
+        'wp_words': wp_words,
+
         'snl': snl,
         'wp': wp,
     })

@@ -81,10 +81,10 @@ class FindKeywordAndFreqs(TestCase):
     def test_find_keywordfreqs(self):
         self.assertEqual(self.fk.find_keywords_and_freqs(
               "Fox fox elephant orange fox orange"),
-          [('fox', 3), ('orange', 2), ('elephant', 1)])
+          ([('fox', 3), ('orange', 2), ('elephant', 1)], 3, 6))
 
     def test_find_keywordfreqs_stopwords(self):
         self.fk.stopword_set = set(['orange'])
         self.assertEqual(self.fk.find_keywords_and_freqs(
               "Fox fox elephant orange fox orange"),
-          [('fox', 3), ('elephant', 1)])
+          ([('fox', 3), ('elephant', 1)], 2, 6))

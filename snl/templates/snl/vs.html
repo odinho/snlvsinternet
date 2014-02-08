@@ -1,19 +1,474 @@
 {% extends "base.html" %}
+{% load snl_utils %}
 
 {% block "content" %}
-  <h1>{{ snl.title }}</h1>
+<meta name="viewport" content="width=990">
+<style>
 
-  <h2>SNL keywords</h2>
-  <ul>
-  {% for key in snl_kw %}
-    <li>{{ key.0 }} ({{ key.1 }})
-  {% endfor %}
-  </ul>
+#g-chart {
+ overflow: hidden;
+ position: relative;
+ display: block;
+ margin: 0 auto;
+ width: 980px;
+}
 
-  <h2>Wikipedia keywords</h2>
-  <ul>
-  {% for key in wp_kw %}
-    <li>{{ key.0 }} ({{ key.1 }})
+.g-overview {
+  position: static;
+  left: inherit;
+  width: 350px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+
+.g-legend {
+  color: #999;
+  font: 11px/1.3em sans-serif;
+  height: 30px;
+  margin-top: 15px;
+  position: relative;
+  text-align: center;
+}
+
+.g-swatch {
+  width: 6px;
+  height: 8px;
+  display: inline-block;
+  position: relative;
+  top: 1px;
+  margin: 0 3px;
+}
+
+.g-republican.g-swatch {
+  background-color: #f9caca;
+  border-radius: 0 4px 4px 0;
+}
+
+.g-democrat.g-swatch {
+  background-color: #c5d7ea;
+  border-radius: 4px 0 0 4px;
+}
+
+.g-republican.g-swatch {
+  background-color: #f9caca;
+}
+
+.g-node .g-democrat {
+  fill: #c5d7ea;
+}
+
+.g-node.g-hover .g-democrat {
+  fill: #acbed1; /* darker(.5) */
+}
+
+.g-node.g-selected .g-democrat {
+  fill: #99c0e5; /* c *= 2, darker(.5) */
+  stroke: #6081a3; /* c *= 2, darker(2) */
+  stroke-width: 1.5px;
+}
+
+.g-node .g-republican {
+  fill: #f9caca;
+}
+
+.g-node.g-hover .g-republican {
+  fill: #dfb1b1; /* darker(.5) */
+}
+
+.g-node.g-selected .g-republican {
+  fill: #fda4a7; /* c *= 2, darker(.5) */
+  stroke: #af5e61; /* c *= 2, darker(2) */
+  stroke-width: 1.5px;
+}
+
+.g-node .g-split {
+  stroke: #000;
+  stroke-opacity: .18;
+  shape-rendering: crispEdges;
+}
+
+a.g-label {
+  color: inherit;
+  cursor: pointer;
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  line-height: 1em;
+  position: absolute;
+}
+
+.g-label .g-value {
+  font: 11px sans-serif;
+  white-space: nowrap;
+}
+
+.g-overlay,
+.g-node,
+.g-label {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.g-overlay {
+  fill: none;
+  pointer-events: all;
+}
+
+.g-body {
+  min-height: 700px;
+}
+</style>
+
+<main>
+<div id="g-chart">
+  <div class="g-legend" style="position:absolute;width:970px;">
+  <div class="g-overview">Nemnde ord per 25.000 skrivne artikkelord <br>frå <span class="g-swatch g-democrat"></span>Store Norske Leksikon og <span class="g-swatch g-republican"></span>Bokmålsk Wikipedia</div>
+  </div>
+  <div class="g-labels"></div>
+    <svg class="g-nodes" width="970" height="540"></svg>
+  </div>
+  <br clear="all"><br>
+</div>
+</main>
+
+<script src=//cdnjs.cloudflare.com/ajax/libs/d3/3.4.1/d3.min.js></script>
+<script>
+var data = {};
+
+function show_viz(in_data) {
+
+(function() {
+if (in_data) {
+  data = in_data
+  data.topics.map(topic)
+}
+else {
+  data.parties = [
+    {name: 'snl', wordCount: 250, },
+    {name: "republican", wordCount: 100 },
+  ];
+
+  data.topics = [
+    {name: "Better", snl: 12, wp: 4},
+    {name: "Choice", snl: 3, wp: 10},
+    {name: "Freedom", snl: 0, wp:1},
+    {name: "Women",  snl: 1, wp: 0},
+  ].map(topic);
+}
+
+data.topic = function(name) {
+  var t = topic({name: name, re: new RegExp("\\b(" + d3.requote(name) + ")\\b", "gi")}, data.topics.length);
+  data.topics.push(t);
+  return t;
+};
+
+
+function topic(topic, i) {
+  topic.id = i;
+  topic.count = 0;
+  topic.cx = topic.x;
+  topic.cy = topic.y;
+
+  //topic.count += count = 10 / 1000 * 25e3;
+  topic.snl_ration = topic.snl / data.parties[0].wordCount * 25e3
+  topic.wp_ration = topic.wp / data.parties[1].wordCount * 25e3
+  topic.count = topic.snl_ration + topic.wp_ration
+  console.log(topic.count);
+
+  console.log(topic);
+  return topic;
+}
+
+})();
+
+(function() {
+
+var width = 970,
+    height = 540;
+
+var collisionPadding = 4,
+    clipPadding = 4,
+    minRadius = 16, // minimum collision radius
+    maxRadius = 65, // also determines collision search radius
+    activeTopic; // currently-displayed topic
+
+var formatShortCount = d3.format(",.0f"),
+    formatLongCount = d3.format(".1f"),
+    formatCount = function(d) { return (d < 10 ? formatLongCount : formatShortCount)(d); };
+
+var r = d3.scale.sqrt()
+    .domain([0, d3.max(data.topics, function(d) { return d.count; })])
+    .range([0, maxRadius]);
+
+var force = d3.layout.force()
+    .charge(0)
+    .size([width, height - 80])
+    .on("tick", tick);
+
+var node = d3.select(".g-nodes").selectAll(".g-node"),
+    label = d3.select(".g-labels").selectAll(".g-label")
+
+d3.select(".g-nodes").append("rect")
+    .attr("class", "g-overlay")
+    .attr("width", width)
+    .attr("height", height)
+    .on("click", clear);
+
+//d3.select(window).on("hashchange", hashchange);
+
+updateTopics(data.topics);
+
+// Update the known topics.
+function updateTopics(topics) {
+  topics.forEach(function(d) {
+    d.r = r(d.count);
+    console.log(d.count);
+    d.cr = Math.max(minRadius, d.r);
+    //d.k = fraction(d.parties[0].count, d.parties[1].count);
+    d.k = fraction(d.snl_ration, d.wp_ration);
+    console.log(d.k);
+    if (isNaN(d.k)) d.k = .5;
+    if (isNaN(d.x)) d.x = (1 - d.k) * width + Math.random();
+    d.bias = .5 - Math.max(.1, Math.min(.9, d.k));
+  });
+  force.nodes(data.topics = topics).start();
+  updateNodes();
+  updateLabels();
+  tick({alpha: 0}); // synchronous update
+}
+
+// Update the displayed nodes.
+function updateNodes() {
+  node = node.data(data.topics, function(d) { return d.name; });
+
+  node.exit().remove();
+
+  var nodeEnter = node.enter().append("a")
+      .attr("class", "g-node")
+      .attr("xlink:href", function(d) { return "#" + encodeURIComponent(d.name); })
+      .call(force.drag)
+      .call(linkTopic);
+
+  var democratEnter = nodeEnter.append("g")
+      .attr("class", "g-democrat");
+
+  democratEnter.append("clipPath")
+      .attr("id", function(d) { return "g-clip-democrat-" + d.id; })
+    .append("rect");
+
+  democratEnter.append("circle");
+
+  var republicanEnter = nodeEnter.append("g")
+      .attr("class", "g-republican");
+
+  republicanEnter.append("clipPath")
+      .attr("id", function(d) { return "g-clip-republican-" + d.id; })
+    .append("rect");
+
+  republicanEnter.append("circle");
+
+  nodeEnter.append("line")
+      .attr("class", "g-split");
+
+  node.selectAll("rect")
+      .attr("y", function(d) { return -d.r - clipPadding; })
+      .attr("height", function(d) { return 2 * d.r + 2 * clipPadding; });
+
+  node.select(".g-democrat rect")
+      .style("display", function(d) { return d.k > 0 ? null : "none" })
+      .attr("x", function(d) { return -d.r - clipPadding; })
+      .attr("width", function(d) { return 2 * d.r * d.k + clipPadding; });
+
+  node.select(".g-republican rect")
+      .style("display", function(d) { return d.k < 1 ? null : "none" })
+      .attr("x", function(d) { return -d.r + 2 * d.r * d.k; })
+      .attr("width", function(d) { return 2 * d.r; });
+
+  node.select(".g-democrat circle")
+      .attr("clip-path", function(d) { return d.k < 1 ? "url(#g-clip-democrat-" + d.id + ")" : null; });
+
+  node.select(".g-republican circle")
+      .attr("clip-path", function(d) { return d.k > 0 ? "url(#g-clip-republican-" + d.id + ")" : null; });
+
+  node.select(".g-split")
+      .attr("x1", function(d) { return -d.r + 2 * d.r * d.k; })
+      .attr("y1", function(d) { return -Math.sqrt(d.r * d.r - Math.pow(-d.r + 2 * d.r * d.k, 2)); })
+      .attr("x2", function(d) { return -d.r + 2 * d.r * d.k; })
+      .attr("y2", function(d) { return Math.sqrt(d.r * d.r - Math.pow(-d.r + 2 * d.r * d.k, 2)); });
+
+  node.selectAll("circle")
+      .attr("r", function(d) { return r(d.count); });
+}
+
+// Update the displayed node labels.
+function updateLabels() {
+  label = label.data(data.topics, function(d) { return d.name; });
+
+  label.exit().remove();
+
+  var labelEnter = label.enter().append("a")
+      .attr("class", "g-label")
+      .attr("href", function(d) { return "#" + encodeURIComponent(d.name); })
+      .call(force.drag)
+      .call(linkTopic);
+
+  labelEnter.append("div")
+      .attr("class", "g-name")
+      .text(function(d) { return d.name; });
+
+  labelEnter.append("div")
+      .attr("class", "g-value");
+
+  label
+      .style("font-size", function(d) { return Math.max(8, d.r / 2) + "px"; })
+      .style("width", function(d) { return d.r * 2.5 + "px"; });
+
+  // Create a temporary span to compute the true text width.
+  label.append("span")
+      .text(function(d) { return d.name; })
+      .each(function(d) { d.dx = Math.max(d.r * 2.5, this.getBoundingClientRect().width); })
+      .remove();
+
+  label
+      .style("width", function(d) { return d.dx + "px"; })
+    .select(".g-value")
+      .text(function(d) { return formatShortCount(d.snl_ration).replace(',', '.') + " - " + formatShortCount(d.wp_ration).replace(',', '.'); });
+
+  // Compute the height of labels when wrapped.
+  label.each(function(d) { d.dy = this.getBoundingClientRect().height; });
+}
+
+
+// Assign event handlers to topic links.
+function linkTopic(a) {
+  a   .on("click", click)
+      .on("mouseover", mouseover)
+      .on("mouseout", mouseout);
+}
+
+
+// Simulate forces and update node and label positions on tick.
+function tick(e) {
+  node
+      .each(bias(e.alpha * 105))
+      .each(collide(.5))
+      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+  label
+      .style("left", function(d) { return (d.x - d.dx / 2) + "px"; })
+      .style("top", function(d) { return (d.y - d.dy / 2) + "px"; });
+
+}
+
+// A left-right bias causing topics to orient by party preference.
+function bias(alpha) {
+  return function(d) {
+    d.x += d.bias * alpha;
+  };
+}
+
+// Resolve collisions between nodes.
+function collide(alpha) {
+  var q = d3.geom.quadtree(data.topics);
+  return function(d) {
+    var r = d.cr + maxRadius + collisionPadding,
+        nx1 = d.x - r,
+        nx2 = d.x + r,
+        ny1 = d.y - r,
+        ny2 = d.y + r;
+    q.visit(function(quad, x1, y1, x2, y2) {
+      if (quad.point && (quad.point !== d) && d.other !== quad.point && d !== quad.point.other) {
+        var x = d.x - quad.point.x,
+            y = d.y - quad.point.y,
+            l = Math.sqrt(x * x + y * y),
+            r = d.cr + quad.point.r + collisionPadding;
+        if (l < r) {
+          l = (l - r) / l * alpha;
+          d.x -= x *= l;
+          d.y -= y *= l;
+          quad.point.x += x;
+          quad.point.y += y;
+        }
+      }
+      return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+    });
+  };
+}
+
+// FisherâYates shuffle.
+function shuffle(array) {
+  var m = array.length, t, i;
+  while (m) {
+    i = Math.floor(Math.random() * m--);
+    t = array[m];
+    array[m] = array[i];
+    array[i] = t;
+  }
+  return array;
+}
+
+// Given two quantities a and b, returns the fraction to split the circle a + b.
+function fraction(a, b) {
+  var k = a / (a + b);
+  if (k > 0 && k < 1) {
+    var t0, t1 = Math.pow(12 * k * Math.PI, 1 / 3);
+    for (var i = 0; i < 10; ++i) { // Solve for theta numerically.
+      t0 = t1;
+      t1 = (Math.sin(t0) - t0 * Math.cos(t0) + 2 * k * Math.PI) / (1 - Math.cos(t0));
+    }
+    k = (1 - Math.cos(t1 / 2)) / 2;
+  }
+  return k;
+}
+
+
+
+// Clear the active topic when clicking on the chart background.
+function clear() {
+  location.replace("#!");
+}
+
+// Rather than flood the browser history, use location.replace.
+function click(d) {
+  location.replace("#" + encodeURIComponent(d === activeTopic ? "!" : d.name));
+  d3.event.preventDefault();
+}
+
+// When hovering the label, highlight the associated node and vice versa.
+// When no topic is active, also cross-highlight with any mentions in excerpts.
+function mouseover(d) {
+  node.classed("g-hover", function(p) { return p === d; });
+  if (!activeTopic) d3.selectAll(".g-mention p").classed("g-hover", function(p) { return p.topic === d; });
+}
+
+// When hovering the label, highlight the associated node and vice versa.
+// When no topic is active, also cross-highlight with any mentions in excerpts.
+function mouseout(d) {
+  node.classed("g-hover", false);
+  if (!activeTopic) d3.selectAll(".g-mention p").classed("g-hover", false);
+}
+
+})();
+
+};
+</script>
+
+<script>
+show_viz(
+{
+  parties: [
+    {name: 'snl', wordCount: {{ snl_words|length }}, },
+    {name: 'wp', wordCount: {{ wp_words|length }}, },
+  ],
+  topics: [
+  {% for kw in keywords %}
+    { name: '{{ kw }}',
+      snl: {{ snl_words|getitem:kw|default:0 }},
+      wp: {{ wp_words|getitem:kw|default:0 }}
+    },
   {% endfor %}
-  </ul>
+    //{name: "ja", snl: 5, wp: 10},
+  ],
+})
+</script>
 {% endblock %}

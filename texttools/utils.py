@@ -17,7 +17,8 @@ class KeywordFinder(object):
             self.stopword_set |= frozenset(f.read().splitlines())
 
     def find_keywords(self, text):
-        return [w[0] for w in self.find_keywords_and_freqs(text)]
+        words, unique_words, total_words = self.find_keywords_and_freqs(text)
+        return [w[0] for w in words]
 
     def sanitize(self, text):
         sanitized_text = strip_tags(unescape(text)).lower()
@@ -35,19 +36,27 @@ class KeywordFinder(object):
                 return False
         return True
 
-    def find_keywords_and_freqs(self, text):
+    def get_word_freqs(self, text):
         sanitised_text = self.sanitize(text)
         word_count = defaultdict(int)
         delim = re.compile(r'[^\w]', flags=re.UNICODE)
+        total_words = 0
 
         for word in delim.split(sanitised_text):
+            total_words += 1
             if not self.count_word(word):
                 continue
             word_count[word] += 1
+
+        return word_count, total_words
+
+    def find_keywords_and_freqs(self, text):
+        word_count, total_words = self.get_word_freqs(text)
+
         sorted_list = sorted(word_count.iteritems(),
                              key=operator.itemgetter(1),
                              reverse=True)
-        return sorted_list[:10]
+        return sorted_list[:10], len(sorted_list), total_words
 
 
 def unescape(text):
