@@ -7,7 +7,7 @@
 
 <div id="g-chart">
   <div class="g-legend" style="position:absolute;width:970px;">
-    <div class="g-overview">Mentioned words per 25,000 written article
+    <div class="g-overview">Mentioned words per 10,000 written article
       words <br>by <span class="g-swatch g-democrat"></span>Store Norske
       Leksikon and <span class="g-swatch g-republican"></span>
       Danish-Norwegian Wikipedia
@@ -66,8 +66,8 @@ function topic(topic, i) {
   topic.cy = topic.y;
 
   //topic.count += count = 10 / 1000 * 25e3;
-  topic.snl_ration = topic.snl / data.parties[0].wordCount * 25e3
-  topic.wp_ration = topic.wp / data.parties[1].wordCount * 25e3
+  topic.snl_ration = topic.snl / data.parties[0].wordCount * 10e3
+  topic.wp_ration = topic.wp / data.parties[1].wordCount * 10e3
   topic.count = topic.snl_ration + topic.wp_ration
   console.log(topic.count);
 
