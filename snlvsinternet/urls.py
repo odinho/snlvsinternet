@@ -5,6 +5,7 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     url(r'^snl/(?P<snl_key>\w+)$', 'snl.views.show', name='show_article'),
+    url(r'^vs/(?P<snl_key>\w+)$', 'snl.views.vs', name='vs'),
 
     url(r'^admin/', include(admin.site.urls)),
 )

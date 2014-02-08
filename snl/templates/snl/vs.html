@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block "content" %}
+  <h1>{{ snl.title }}</h1>
+
+  <h2>SNL keywords</h2>
+  <ul>
+  {% for key in snl_kw %}
+    <li>{{ key.0 }} ({{ key.1 }})
+  {% endfor %}
+  </ul>
+
+  <h2>Wikipedia keywords</h2>
+  <ul>
+  {% for key in wp_kw %}
+    <li>{{ key.0 }} ({{ key.1 }})
+  {% endfor %}
+  </ul>
+{% endblock %}
