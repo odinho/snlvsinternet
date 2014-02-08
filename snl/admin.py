@@ -6,6 +6,7 @@ from snl.models import Image
 
 class ImageInline(admin.StackedInline):
     model = Image
+    extra = 0
 
 class ArticleAdmin(admin.ModelAdmin):
     list_display = ('title', 'url', 'created_at', 'changed_at')

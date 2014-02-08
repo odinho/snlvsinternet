@@ -22,7 +22,10 @@ class ArticleManager(models.Manager):
                                 full_name=author['full_name'])
             a.authors.add(author_obj)
         for image in images:
-            a.images.create(**image)
+            try:
+                a.images.create(**image)
+            except TypeError:
+                pass
         a.save()
         return a
 
