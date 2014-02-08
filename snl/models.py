@@ -6,13 +6,15 @@ from jsonfield import JSONField
 
 class ArticleManager(models.Manager):
     def _fetch_article_from_api(self, url):
-        api_url = '{url}.json'.format(url=url)
-        resp = requests.get(api_url)
+        api_url = u'{url}.json'.format(url=url)
+        resp = requests.get(api_url.encode('utf-8'))
         return resp.json()
 
-    def create_article_from_dict(self, article_dict):
+    def create_article_from_dict(self, url, article_dict):
         author_list = article_dict.pop('authors')
         images = article_dict.pop('images')
+        article_dict.pop('url')
+        article_dict['url'] = url
         a = Article(**article_dict)
         a.save()
         for author in author_list:
@@ -29,7 +31,7 @@ class ArticleManager(models.Manager):
             return Article.objects.get(url=url)
         except Article.DoesNotExist:
             article_dict = self._fetch_article_from_api(url)
-            return self.create_article_from_dict(article_dict)
+            return self.create_article_from_dict(url, article_dict)
 
 class Article(models.Model):
     url = models.URLField(unique=True)
@@ -47,9 +49,15 @@ class Article(models.Model):
 
     objects = ArticleManager()
 
+    def __unicode__(self):
+        return self.title
+
 
 class Author(models.Model):
     full_name = models.CharField(max_length=100, unique=True)
+
+    def __unicode__(self):
+        return self.full_name
 
 class Image(models.Model):
     full_size_url = models.URLField(unique=True)
