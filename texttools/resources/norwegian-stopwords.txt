@@ -258,5 +258,7 @@ stedet
 navnet
 stor
 preget
+artikkel
+utdypende
 
 
