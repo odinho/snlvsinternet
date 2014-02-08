@@ -42,6 +42,7 @@ def vs(request, snl_key):
     keywords = set(snl_top + wp_top + all_top)
 
     return render(request, 'snl/vs.html', {
+        'key': snl_key,
 
         'keywords': keywords,
         'snl_words': snl_words,

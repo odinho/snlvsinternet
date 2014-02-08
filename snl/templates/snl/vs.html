@@ -1,22 +1,29 @@
 {% extends "base.html" %}
 {% load snl_utils %}
 
+{% block site-title-extra %}{{ key }} | {% endblock %}
 {% block "content" %}
 <meta name="viewport" content="width=990">
 <style>
+
+main {
+ margin: 0 auto;
+ width: 980px;
+ color: #999;
+ font: 14px/1.3em sans-serif;
+}
 
 #g-chart {
  overflow: hidden;
  position: relative;
  display: block;
- margin: 0 auto;
- width: 980px;
+ color: #000;
 }
 
 .g-overview {
   position: static;
   left: inherit;
-  width: 350px;
+  width: 380px;
   margin: 0 auto;
   text-align: center;
 }
@@ -24,7 +31,7 @@
 
 .g-legend {
   color: #999;
-  font: 11px/1.3em sans-serif;
+  font: 14px/1.3em sans-serif;
   height: 30px;
   margin-top: 15px;
   position: relative;
@@ -115,20 +122,81 @@ a.g-label {
 }
 
 .g-body {
-  min-height: 700px;
+  min-height: 500px;
+}
+
+h1 {
+ text-align: center;
+ font-weight: normal;
+ font-size: 18pt;
+}
+h1 span {
+ color: #333;
+ font-size: 1.4em;
+}
+
+input {
+
+ font-size: 27pt;
+ box-sizing: border-box;
+}
+input.inkey {
+ text-align: center;
+ border: none;
+ border-bottom: 1px solid black;
+ height: 50px;
+ margin: 0 auto;
+ display: block;
+ font-weight: bold;
+}
+input.subm {
+ font-size: 13pt;
+ opacity: 0;
+ transition: opacity 1s;
+ position: absolute;
+ right: -125px;
+ top: 10px;
+ width: 100px;
+}
+input.subm.enabled {
+ opacity: 1;
+ transition: opacity 1s;
+}
+.s {
+text-align: center;
+position: relative;
+width: 400px;
+margin: 0 auto;
 }
 </style>
 
 <main>
+<h1>SNL ± Wikipedia</h1>
+
+<div class=s>
+  <input id=inkey class="inkey" data-orgkey="{{ key }}"
+      name=key placeholder="Enter SNL keyword" value="{{ key }}">
+  <input class=subm type=submit value="Look up">
+</div>
+
 <div id="g-chart">
   <div class="g-legend" style="position:absolute;width:970px;">
-  <div class="g-overview">Nemnde ord per 25.000 skrivne artikkelord <br>frå <span class="g-swatch g-democrat"></span>Store Norske Leksikon og <span class="g-swatch g-republican"></span>Bokmålsk Wikipedia</div>
+    <div class="g-overview">Mentioned words per 25,000 written article
+      words <br>by <span class="g-swatch g-democrat"></span>Store Norske
+      Leksikon and <span class="g-swatch g-republican"></span>
+      Danish-Norwegian Wikipedia
+    </div>
   </div>
   <div class="g-labels"></div>
-    <svg class="g-nodes" width="970" height="540"></svg>
+  <svg class="g-nodes" width="970" height="540"></svg>
   </div>
-  <br clear="all"><br>
 </div>
+
+<div class=info>
+<p>The project aims to compare and contrast articles from <a href="http://snl.no/">Store Norske Leksikon</a> with articles from <a href="http://no.wikipedia.org/">Wikipedia</a>. By drawing out keywords based on relative frequency and comparing the use of those keywords in the corresponding articles from SNL and Wikipedia, the project helps gain insight into the weight of certain keywords used to describe the topics of the articles.</p>
+<p>The prototype allows the user to input titles of articles from SNL and Wikipedia and is presented with a visual comparison of keywords in the articles based on relative frequency of occurrence.</p>
+</div>
+
 </main>
 
 <script src=//cdnjs.cloudflare.com/ajax/libs/d3/3.4.1/d3.min.js></script>
@@ -469,6 +537,22 @@ show_viz(
   {% endfor %}
     //{name: "ja", snl: 5, wp: 10},
   ],
+})
+
+
+document.getElementById('inkey').addEventListener('input', function() {
+  var subm = document.querySelector('.subm')
+  if (this.dataset['orgkey'] !== this.value && !subm.classList.contains('enabled'))
+  {
+    subm.classList.add('enabled')
+  }
+  else if (this.dataset['orgkey'] == this.value && subm.classList.contains('enabled'))
+  {
+    subm.classList.remove('enabled')
+  }
+})
+document.querySelector('.subm').addEventListener('click', function() {
+  document.location = '/vs/' + document.querySelector('#inkey').value;
 })
 </script>
 {% endblock %}
