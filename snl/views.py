@@ -19,9 +19,23 @@ def show(request, snl_key):
     })
 
 def vs(request, snl_key):
-    snl = Article.objects.fetch(
-                  SNL_URL.format(key=snl_key))
-    wp = WikipediaArticle.objects.fetch(key=snl_key)
+    error = ''
+    try:
+        snl = Article.objects.fetch(
+                      SNL_URL.format(key=snl_key))
+    except ValueError:
+        error = 'Could not find that SNL article.'
+
+    try:
+        wp = WikipediaArticle.objects.fetch(key=snl_key)
+    except KeyError:
+        error = 'No corresponding Wikipedia article.'
+
+    if error:
+        return render(request, 'snl/error.html', {
+          'snl_key': snl_key,
+          'error': error,
+        })
     kf = KeywordFinder()
 
     snl_words, snl_wc = kf.get_word_freqs(snl.xhtml_body)
@@ -50,4 +64,6 @@ def vs(request, snl_key):
 
         'snl': snl,
         'wp': wp,
+
+        'error': error,
     })
