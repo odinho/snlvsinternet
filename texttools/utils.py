@@ -29,7 +29,7 @@ class KeywordFinder(object):
         if not word:
             return False
         if word.isdigit():
-            if 1000 < int(word) < 2100:
+            if 1000 < int(word):
                 return True
             else:
                 return False

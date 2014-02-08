@@ -46,5 +46,5 @@ class CreateArticle(TestCase):
           "url": "http://snl.no/Oslo",
           "xhtml_body": "<div><p>Norges hovedstad</div>\n",
         }
-        a = Article.objects.create_article_from_dict(dict_)
+        a = Article.objects.create_article_from_dict('http://snl.no/Oslo', dict_)
         self.assertEquals(a.title, 'Oslo')

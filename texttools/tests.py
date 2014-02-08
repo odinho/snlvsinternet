@@ -34,6 +34,11 @@ class FindKeyword(TestCase):
               "<p>Fox. fox</p> elephant. <div>orange fox.orange"),
           ['fox', 'orange', 'elephant'])
 
+    def test_find_keywords_remove_non_year_numbers(self):
+        self.assertEqual(self.fk.find_keywords(
+              "Fox 2011 orange 1900 10 10000 1"),
+          ['orange', '2011', '10000', 'fox', '1900'])
+
     def test_find_keywords_with_html_entities(self):
         text = 'og&#xA0;st&#xF8;rste by,&#xA0;og '
         self.assertEqual(
