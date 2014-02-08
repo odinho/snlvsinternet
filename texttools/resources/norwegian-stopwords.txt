@@ -261,4 +261,4 @@ preget
 artikkel
 utdypende
 annet
-
+ca
