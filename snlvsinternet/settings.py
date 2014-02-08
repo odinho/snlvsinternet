@@ -25,11 +25,10 @@ WIKIPEDIA_STOPWORD_FILE = os.path.join(
 SECRET_KEY = 'qyxod_k1&(cv(5y0s^-zo4&*dica+i)fl^9ag=s=s^oz9*ol&8'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
+TEMPLATE_DEBUG = DEBUG
 
-TEMPLATE_DEBUG = True
-
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['snl.velmont.no', 'snl.nynorsk.no']
 
 TEMPLATE_DIRS = (
     os.path.join(BASE_DIR, 'templates'),
@@ -68,7 +67,7 @@ WSGI_APPLICATION = 'snlvsinternet.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': os.path.join(BASE_DIR, 'db', 'db.sqlite3'),
     }
 }
 
