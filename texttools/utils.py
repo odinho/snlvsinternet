@@ -8,24 +8,40 @@ from django.utils.html import strip_tags
 
 class KeywordFinder(object):
     def __init__(self, stopword_fn=settings.STOPWORD_FILE):
+        self.stopword_set = frozenset()
         if stopword_fn:
-            with codecs.open(stopword_fn, 'r', 'utf-8') as f:
-                self.stopword_set = frozenset(f.read().splitlines())
-        else:
-            self.stopword_set = frozenset()
+            self.add_stopwords_from_file(stopword_fn)
+
+    def add_stopwords_from_file(self, stopword_fn):
+        with codecs.open(stopword_fn, 'r', 'utf-8') as f:
+            self.stopword_set |= frozenset(f.read().splitlines())
 
     def find_keywords(self, text):
         return [w[0] for w in self.find_keywords_and_freqs(text)]
 
+    def sanitize(self, text):
+        sanitized_text = strip_tags(unescape(text)).lower()
+        return sanitized_text
+
+    def count_word(self, word):
+        if word in self.stopword_set:
+            return False
+        if not word:
+            return False
+        if word.isdigit():
+            if 1000 < int(word) < 2100:
+                return True
+            else:
+                return False
+        return True
+
     def find_keywords_and_freqs(self, text):
-        sanitised_text = strip_tags(unescape(text)).lower()
+        sanitised_text = self.sanitize(text)
         word_count = defaultdict(int)
         delim = re.compile(r'[^\w]', flags=re.UNICODE)
 
         for word in delim.split(sanitised_text):
-            if word in self.stopword_set:
-                continue
-            if not word:
+            if not self.count_word(word):
                 continue
             word_count[word] += 1
         sorted_list = sorted(word_count.iteritems(),
