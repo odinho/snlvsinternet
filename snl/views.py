@@ -18,6 +18,10 @@ def show(request, snl_key):
         'keywords': keywords,
     })
 
+def home(request):
+    return render(request, 'snl/home.html', {
+    })
+
 def vs(request, snl_key):
     error = ''
     try:

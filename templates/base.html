@@ -4,6 +4,10 @@
 
 <style>
 
+input:focus {
+ outline: 0;
+ box-shadow: 0 10px 40px -20px #000;
+}
 main {
  margin: 0 auto;
  width: 980px;
@@ -125,12 +129,12 @@ a.g-label {
 
 h1 {
  text-align: center;
+}
+h1 a {
  font-weight: normal;
  font-size: 18pt;
-}
-h1 span {
- color: #333;
- font-size: 1.4em;
+ color: #000;
+ text-decoration: none;
 }
 
 input {
@@ -169,11 +173,12 @@ margin: 0 auto;
 </style>
 
 <main>
-<h1>SNL ± Wikipedia</h1>
+<h1><a href=/>SNL ± Wikipedia</a></h1>
 
 <div class=s>
   <input id=inkey class="inkey" data-orgkey="{{ key }}"
-      name=key placeholder="Enter SNL keyword" value="{{ key }}">
+      name=key autofocus placeholder="Enter SNL keyword"
+      value="{{ key }}">
   <input class=subm type=submit value="Look up">
 </div>
 
@@ -181,8 +186,12 @@ margin: 0 auto;
   Nothing here...
 {% endblock %}
 <script>
-document.getElementById('inkey').addEventListener('input', function() {
+document.getElementById('inkey').addEventListener('keydown', function(e) {
   var subm = document.querySelector('.subm')
+  if (e.keyCode == 13) { // Enter
+    subm.click()
+    return
+  }
   if (this.dataset['orgkey'] !== this.value && !subm.classList.contains('enabled'))
   {
     subm.classList.add('enabled')
@@ -193,6 +202,6 @@ document.getElementById('inkey').addEventListener('input', function() {
   }
 })
 document.querySelector('.subm').addEventListener('click', function() {
-  document.location = '/vs/' + document.querySelector('#inkey').value;
+  document.location = '/' + document.querySelector('#inkey').value;
 })
 </script>
