@@ -260,5 +260,5 @@ stor
 preget
 artikkel
 utdypende
-
+annet
 
