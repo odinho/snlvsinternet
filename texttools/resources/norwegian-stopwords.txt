@@ -249,6 +249,8 @@ m
 p
 gjennom
 usas
+lille
+dels
 
 
 
