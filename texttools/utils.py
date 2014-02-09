@@ -27,7 +27,7 @@ class KeywordFinder(object):
     def count_word(self, word):
         if word in self.stopword_set:
             return False
-        if not word:
+        if len(word) <= 1:
             return False
         if word.isdigit():
             if 1000 < int(word):
