@@ -9,7 +9,8 @@ urlpatterns = patterns('',
     url(r'^vs/(?P<snl_key>.+)$', 'snl.views.vs'),
 
     url(r'^$', 'snl.views.home', name='home'),
-    url(r'^(?P<snl_key>.+)$', 'snl.views.vs', name='vs'),
 
     url(r'^admin/', include(admin.site.urls)),
+
+    url(r'^(?P<snl_key>.+)$', 'snl.views.vs', name='vs'),
 )
